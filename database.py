@@ -4,7 +4,7 @@ import sqlite3 as sql
 class Database:
     
     def __init__(self, dbPath):
-        self.con = sql.connect('test.db', isolation_level=None) #autocommit mode
+        self.con = sql.connect(dbPath, isolation_level=None) #autocommit mode
         self.upgradeSchema()
     
     def upgradeSchema(self):
@@ -25,6 +25,9 @@ class Database:
         if self.needMigration('add category.path'):
             cur.execute("alter table category add column path text")
 
+        if self.needMigration('add product.image_crawled'):
+            cur.execute("alter table product add column image_crawled integer default 0")
+
 
     def needMigration(self, name):
         cur = self.con.cursor()        
@@ -41,7 +44,13 @@ class Database:
 
     def getCategoriesToCrawl(self):
         cur = self.con.cursor()        
-        cur.execute("select id from category where leaf=1 and product_count=0 and path like ?", ('women',))
+        cur.execute("select id from category where leaf=1 and product_count=0")
+        cats = cur.fetchall()
+        return [cat[0] for cat in cats]
+        
+    def getCategories(self):
+        cur = self.con.cursor()        
+        cur.execute("select id from category")
         cats = cur.fetchall()
         return [cat[0] for cat in cats]
         
@@ -55,9 +64,13 @@ class Database:
     
     def getProductImagesToCrawl(self):
         cur = self.con.cursor()        
-        cur.execute("select p.image from product p, category c where c.id=p.category_id and c.path like ?", ('women%',))
-        images = cur.fetchall()
-        return [image[0] for image in images]
+        cur.execute("select p.id, p.image from product p, category c where c.id=p.category_id and c.product_count >=1000 and p.image_crawled=0")
+        return cur.fetchall()
+    
+    def setProductImageCrawled(self, productId):
+        cur = self.con.cursor()        
+        cur.execute("update product set image_crawled=1 where id=?", productId)
+        
     
     def populateCategoryPath(self):
         cur = self.con.cursor()        
