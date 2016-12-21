@@ -7,6 +7,7 @@ import os
 import sys
 import database
 import threading
+import random
 
 ApiKey = os.environ['SHOPSTYLE_API_KEY']
 
@@ -65,7 +66,8 @@ def crawlImagesInList(outputDir, images):
 
 def crawlImages(outputDir):
     images = db.getProductImagesToCrawl()
-    batchSize = len(images)/50
+    random.shuffle(images)
+    batchSize = len(images)/10
     sublists = [images[x:x+batchSize] for x in xrange(0, len(images), batchSize)]
 
     workers = []
