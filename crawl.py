@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import database
+import threading
 
 ApiKey = os.environ['SHOPSTYLE_API_KEY']
 
@@ -45,8 +46,7 @@ def crawlProducts():
         count = crawProductsInCategory(cat)
         db.setCategoryProductCount(cat, count)
 
-def crawlImages(outputDir):
-    images = db.getProductImagesToCrawl()
+def crawlImagesInList(outputDir, images):
     count = 1
     for productId, image in images:
         filename = image.split('/')[-1]
@@ -58,10 +58,22 @@ def crawlImages(outputDir):
 
             print 'fetching # %d of %d (%s)' % (count, len(images), filename)
             urllib.urlretrieve(image, path)
-            db.setProductImageCrawled(productId)
+            #db.setProductImageCrawled(productId)
         else:
             print 'skipping # %d of %d (%s)' % (count, len(images), filename)
         count += 1
+
+def crawlImages(outputDir):
+    images = db.getProductImagesToCrawl()
+    sublists = [images[x:x+30000] for x in xrange(0, len(images), 10000)]
+
+    workers = []
+    for sublist in sublists:
+        worker = threading.Thread(target=crawlImagesInList, args=(outputDir,sublist))
+        worker.start()
+        workers.append(worker)
+    for worker in workers:
+        worker.join()
 
 def main():
     parser = argparse.ArgumentParser()
@@ -79,9 +91,9 @@ def main():
         db.populateCategoryPath()
 
     # Crawl products if necessary
-    crawlProducts()
+    #crawlProducts()
     
-    crawlImages(args.images_path)
+    #crawlImages(args.images_path)
 
 if __name__ == "__main__":
     main()

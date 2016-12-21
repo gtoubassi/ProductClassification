@@ -28,6 +28,9 @@ class Database:
         if self.needMigration('add product.image_crawled'):
             cur.execute("alter table product add column image_crawled integer default 0")
 
+        if self.needMigration('add experiment schema'):
+            cur.execute("create table experiment(id integer primary key autoincrement, name text, date text)")
+            cur.execute("create table predicted_category(experiment_id integer, product_id integer, category_id text, score real)")
 
     def needMigration(self, name):
         cur = self.con.cursor()        
@@ -69,7 +72,7 @@ class Database:
     
     def setProductImageCrawled(self, productId):
         cur = self.con.cursor()        
-        cur.execute("update product set image_crawled=1 where id=?", productId)
+        cur.execute("update product set image_crawled=1 where id=?", (productId,))
         
     
     def populateCategoryPath(self):
