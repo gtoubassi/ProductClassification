@@ -389,6 +389,7 @@ def get_or_create_bottleneck(sess, image_lists, label_name, index, image_dir,
                                                 jpeg_data_tensor,
                                                 bottleneck_tensor)
     bottleneck_string = ','.join(str(x) for x in bottleneck_values)
+    ensure_dir_exists(os.path.dirname(bottleneck_path))
     with open(bottleneck_path, 'w') as bottleneck_file:
       bottleneck_file.write(bottleneck_string)
 
@@ -757,8 +758,7 @@ def add_evaluation_step(result_tensor, ground_truth_tensor):
   tf.summary.scalar('accuracy', evaluation_step)
   return evaluation_step, prediction
 
-
-def main(_):
+def retrain(image_lists):
   # Setup the directory we'll write summaries to for TensorBoard
   if tf.gfile.Exists(FLAGS.summaries_dir):
     tf.gfile.DeleteRecursively(FLAGS.summaries_dir)
@@ -769,9 +769,6 @@ def main(_):
   graph, bottleneck_tensor, jpeg_data_tensor, resized_image_tensor = (
       create_inception_graph())
 
-  # Look at the folder structure, and create lists of all the images.
-  image_lists = create_image_lists(FLAGS.image_dir, FLAGS.testing_percentage,
-                                   FLAGS.validation_percentage)
   class_count = len(image_lists.keys())
   if class_count == 0:
     print('No valid folders of images found at ' + FLAGS.image_dir)
@@ -873,8 +870,8 @@ def main(_):
                                     'testing', FLAGS.bottleneck_dir,
                                     FLAGS.image_dir, jpeg_data_tensor,
                                     bottleneck_tensor))
-  test_accuracy, predictions = sess.run(
-      [evaluation_step, prediction],
+  test_accuracy, result_tensor, predictions = sess.run(
+      [evaluation_step, final_tensor, prediction],
       feed_dict={bottleneck_input: test_bottlenecks,
                  ground_truth_input: test_ground_truth})
   print('Final test accuracy = %.1f%% (N=%d)' % (
@@ -893,10 +890,18 @@ def main(_):
     f.write(output_graph_def.SerializeToString())
   with gfile.FastGFile(FLAGS.output_labels, 'w') as f:
     f.write('\n'.join(image_lists.keys()) + '\n')
+    
+  return test_filenames, result_tensor
 
 
-if __name__ == '__main__':
-  parser = argparse.ArgumentParser()
+def main(_):
+  # Look at the folder structure, and create lists of all the images.
+  image_lists = create_image_lists(FLAGS.image_dir, FLAGS.testing_percentage,
+                                   FLAGS.validation_percentage)
+  retrain(image_lists)
+
+
+def addargs(parser):
   parser.add_argument(
       '--image_dir',
       type=str,
@@ -1048,6 +1053,14 @@ if __name__ == '__main__':
       input pixels up or down by.\
       """
   )
+
+def setargs(args):
+    global FLAGS
+    FLAGS=args
+
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser()
+  addargs(parser)
   FLAGS, unparsed = parser.parse_known_args()
   tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
 

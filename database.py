@@ -5,6 +5,7 @@ class Database:
     
     def __init__(self, dbPath):
         self.con = sql.connect(dbPath, isolation_level=None) #autocommit mode
+        self.con.row_factory = sql.Row
         self.upgradeSchema()
     
     def upgradeSchema(self):
@@ -30,7 +31,38 @@ class Database:
 
         if self.needMigration('add experiment schema'):
             cur.execute("create table experiment(id integer primary key autoincrement, name text, date text)")
-            cur.execute("create table predicted_category(experiment_id integer, product_id integer, category_id text, score real)")
+            cur.execute("create table predicted_category(experiment_id integer, product_id integer, category_id text, score real default 0)")
+
+    def addExperiment(self, name):
+        cur = self.con.cursor()        
+        cur.execute("insert into experiment(name, date) values (?, datetime())", (name,))
+        return cur.lastrowid
+
+    def addPredictedCategory(self, experimentId, productId, categoryId, score):
+        cur = self.con.cursor()        
+        cur.execute("insert into predicted_category(experiment_id, product_id, category_id, score) values (?, ?, ?, ?)", (experimentId, productId, categoryId, float(score)))
+        return cur.lastrowid
+    
+    def getProductsForCategory(self, cat):
+        cur = self.con.cursor()        
+        cur.execute("select * from product where category_id=?", (cat,))
+        return cur.fetchall()
+    
+    def getExperiments(self):
+        cur = self.con.cursor()        
+        cur.execute("select * from experiment")
+        return cur.fetchall()
+    
+    def getParentCategoryMap(self):
+        cur = self.con.cursor()
+        cur.execute("select id, parent from category")
+        cats = cur.fetchall();
+        return dict((c, p) for c, p in cats)
+        
+    def getPredictedCategories(self, experimentId):
+        cur = self.con.cursor()        
+        cur.execute("select p.id as id, p.category_id as category, pc.category_id as prediction, pc.score as score from predicted_category pc, product p where pc.product_id=p.id and experiment_id=?", (experimentId,))
+        return cur.fetchall()
 
     def needMigration(self, name):
         cur = self.con.cursor()        
