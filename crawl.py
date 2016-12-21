@@ -65,7 +65,8 @@ def crawlImagesInList(outputDir, images):
 
 def crawlImages(outputDir):
     images = db.getProductImagesToCrawl()
-    sublists = [images[x:x+30000] for x in xrange(0, len(images), 10000)]
+    batchSize = len(images)/50
+    sublists = [images[x:x+batchSize] for x in xrange(0, len(images), batchSize)]
 
     workers = []
     for sublist in sublists:
@@ -93,7 +94,7 @@ def main():
     # Crawl products if necessary
     #crawlProducts()
     
-    #crawlImages(args.images_path)
+    crawlImages(args.images_path)
 
 if __name__ == "__main__":
     main()
