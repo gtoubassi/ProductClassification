@@ -32,7 +32,9 @@ def crawProductsInCategory(categoryId):
         url = "http://api.shopstyle.com/api/v2/products?cat=%s&pid=%s&offset=%d&limit=50" % (categoryId, ApiKey, offset * 50)
         response = urllib.urlopen(url)
         data = json.loads(response.read())
-        products = data['products']
+        products = data.get('products')
+        if products is None:
+            products = []
         count += len(products)
         if len(products) == 0:
             break
@@ -94,7 +96,7 @@ def main():
         db.populateCategoryPath()
 
     # Crawl products if necessary
-    #crawlProducts()
+    crawlProducts()
     
     crawlImages(args.images_path)
 
