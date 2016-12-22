@@ -10,7 +10,11 @@ from tensorflow.python.util import compat
 import numpy as np
 
 def categorize(image_dir, num_steps, categories):
-    experimentId = db.addExperiment("Image categorization of: %s (steps: %d)" % (",".join(categories), num_steps))
+    if len(categories) <= 10:    
+        name = ",".join(categories)
+    else:
+        name = ",".join(categories[0:5]) + ("... (%d more)" % + len(categories))
+    experimentId = db.addExperiment("Image categorization of: %s (steps: %d)" % (name, num_steps))
     image_lists = {}
     files_to_categories = {}
     files_to_productId = {}
@@ -70,8 +74,8 @@ def main():
     
     #categorize(args.images_path, args.how_many_training_steps, ['skinny-jeans', 'bootcut-jeans'])
     #categorize(args.images_path, args.how_many_training_steps, ['clutches', 'bootcut-jeans'])
-    categorize(args.images_path, args.how_many_training_steps,['clutches', 'bootcut-jeans','shortsleeve-tops','distressed-jeans','womens-tech-accessories'])
-    #categorize(args.images_path, args.how_many_training_steps,['shortsleeve-tops','distressed-jeans','womens-tech-accessories','maternity-pants','skinny-jeans','petite-sweatshirts','bras','teen-girls-shorts','long-skirts','swimsuit-coverups'])
+
+    categorize(args.images_path, args.how_many_training_steps, db.getCategoriesToPredict())
 
 if __name__ == "__main__":
     main()

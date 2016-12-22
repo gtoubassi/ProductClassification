@@ -83,6 +83,12 @@ class Database:
         cats = cur.fetchall()
         return [cat[0] for cat in cats]
         
+    def getCategoriesToPredict(self):
+        cur = self.con.cursor()        
+        cur.execute("select id from category where leaf=1 and product_count >= 1000")
+        cats = cur.fetchall()
+        return [cat[0] for cat in cats]
+        
     def getCategories(self):
         cur = self.con.cursor()        
         cur.execute("select id from category")
