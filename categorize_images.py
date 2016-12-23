@@ -14,7 +14,7 @@ def categorize(image_dir, num_steps, categories):
         name = ",".join(categories)
     else:
         name = ",".join(categories[0:5]) + ("... (%d more)" % + len(categories))
-    experimentId = db.addExperiment("Image categorization of: %s (steps: %d)" % (name, num_steps))
+    experimentId = db.addExperiment("Image classification of: %s (steps: %d)" % (name, num_steps))
     image_lists = {}
     files_to_categories = {}
     files_to_productId = {}

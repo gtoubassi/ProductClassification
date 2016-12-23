@@ -10,6 +10,7 @@ from tensorflow.python.util import compat
 import numpy as np
 
 def analyzeCoverageForDesiredAccuracy(predictions, desired_accuracy):
+    coverage = 0.0
     for i in xrange(50, 100):
         threshold = i/100.0
         coverage_count = 0
