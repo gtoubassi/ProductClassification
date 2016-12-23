@@ -148,7 +148,7 @@ def main():
     
     #trainText([])
     #trainText(['skinny-jeans', 'bootcut-jeans'])
-    trainText(['belts','gloves','hats','scarves','sunglasses','key-chains','womens-tech-accessories','athletic-jackets','athletic-pants','athletic-shorts'   ,'sports-bras-and-underwear','athletic-tops','bridal-gowns','bridal-jewelry','bootcut-jeans','cropped-jeans','distressed-jeans','flare-jeans','relaxed-jeans','skinny-jeans','straight-leg-jeans','stretch-jeans','wedding-dresses','cocktail-dresses','day-dresses','evening-dresses','bras','camisoles','chemises','gowns'])
-    
+    trainText(['two-piece-swimsuits','sunglasses','cardigan-sweaters','stretch-jeans','plus-size-swimsuits','swimsuit-coverups','panties','distressed-jeans','camisole-tops','athletic-pants','brooches-and-pins','tunic-tops','scarves','teen-girls-intimates','gloves','coats','cropped-jeans','thongs','hats','sports-bras-and-underwear','cropped-pants','petite-jeans','blazers','halter-tops','diamond-necklaces','robes','shapewear','skinny-pants','flare-jeans'])
+ 
 if __name__ == "__main__":
     main()

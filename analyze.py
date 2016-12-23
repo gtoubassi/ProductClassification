@@ -11,7 +11,7 @@ import numpy as np
 
 def analyzeCoverageForDesiredAccuracy(predictions, desired_accuracy):
     coverage = 0.0
-    for i in xrange(50, 100):
+    for i in xrange(0, 100):
         threshold = i/100.0
         coverage_count = 0
         num_correct = 0
@@ -27,7 +27,7 @@ def analyzeCoverageForDesiredAccuracy(predictions, desired_accuracy):
 
 def analyze(predictions):
     accuracy, coverage = analyzeCoverageForDesiredAccuracy(predictions, 0)
-    print("  Accuracy: %.2f%%" % (100*accuracy))
+    print("  Accuracy: %.2f%% (N=%d)" % (100*accuracy, len(predictions)))
     accuracy, coverage = analyzeCoverageForDesiredAccuracy(predictions, .95)
     print("  95%% Accuracy Coverage: %d%%" % (coverage*100))
     accuracy, coverage = analyzeCoverageForDesiredAccuracy(predictions, .98)
