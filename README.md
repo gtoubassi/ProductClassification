@@ -18,7 +18,7 @@ Again the goal is to train a network that when presented with name/description/i
 
 ### Image base categorization
 
-''categorize_images.py'' will categorize images using a pretrained Inception network (see references below).  This gives 90+% accuracy for a small subset of categories (TBD: run on all of them).  After running ''categorize_images.py'' you can run ''analyze.py'' to generate a report of all of your runs (re)
+''categorize_images.py'' will categorize images using a pretrained Inception network (see references below).  After running ''categorize_images.py'' you can run ''analyze.py'' to generate a report of all of your runs.
 
 ### Resources
 
