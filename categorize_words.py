@@ -36,7 +36,7 @@ def trainText(categories):
     if len(categories) <= 10:    
         name = ",".join(categories)
     else:
-        name = ",".join(categories[0:5]) + ("... (%d more)" % + len(categories))
+        name = ",".join(categories[0:5]) + ("... (%d total)" % + len(categories))
     experimentId = db.addExperiment("Text classification of: %s" % name)
 
     products = db.getProducts(categories)
@@ -101,13 +101,16 @@ def trainText(categories):
 
         # Train
 
-        for _ in range(10):
+        for _ in range(5):
             random.shuffle(train)
 
-            print("eval (N=%d shape=%s)" % (len(test_x), test_x[0].shape))
-  
-            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-            print(sess.run(accuracy, feed_dict={x: test_x, y_: test_y}))
+            print("eval (N=%d)" % len(test_x))
+            correct = 0
+            for i, t in enumerate(test_x):
+                guess = sess.run(prediction, feed_dict={x:np.reshape(t, [1, len(t)])})
+                if guess[0] == np.argmax(test_y[i]):
+                    correct += 1
+            print("Calculated accuracy: %f" % (float(correct)/len(test_x)))
 
             print "train"
             for i in xrange(0, len(train), 32):
@@ -148,10 +151,12 @@ def main():
     
     #trainText([])
     #trainText(['skinny-jeans', 'bootcut-jeans'])
+
+    #trainText(['two-piece-swimsuits','sunglasses','cardigan-sweaters','stretch-jeans','plus-size-swimsuits'])
     #trainText(['two-piece-swimsuits','sunglasses','cardigan-sweaters','stretch-jeans','plus-size-swimsuits','swimsuit-coverups','panties','distressed-jeans','camisole-tops','athletic-pants','brooches-and-pins','tunic-tops','scarves','teen-girls-intimates','gloves','coats','cropped-jeans','thongs','hats','sports-bras-and-underwear','cropped-pants','petite-jeans','blazers','halter-tops','diamond-necklaces','robes','shapewear','skinny-pants','flare-jeans'])
     #trainText(['slippers','wedding-dresses','cashmere-sweaters','leather-jackets','plus-size-outerwear','chemises','plus-size-tops','tunic-tops','camisole-tops','diamond-bracelets','straight-leg-jeans','leggings','evening-dresses','flare-jeans','sunglasses','coats','socks','button-front-tops','stretch-jeans','shortsleeve-tops','bracelets','fur-and-shearling-coats','hats','teen-girls-jeans','one-piece-swimsuits','v-neck-sweaters','diamond-necklaces','athletic-jackets','gloves','blazers','bootcut-jeans','skinny-jeans','denim-jackets','maternity-intimates','sports-bras-and-underwear','wool-coats','womens-tech-accessories','brooches-and-pins','polo-tops','tees-and-tshirts','halter-tops','teen-girls-dresses','raincoats-and-trenchcoats','gowns','thongs','cropped-pants','pajamas','relaxed-jeans','leather-and-suede-coats','plus-size-swimsuits'])
     #trainText(['teen-girls-tops','plus-size-skirts','plus-size-jeans','flare-jeans','cropped-pants','sleeveless-tops','plus-size-pants','wedding-dresses','gloves','tank-tops','athletic-jackets','womens-tech-accessories','camisole-tops','brooches-and-pins','casual-jackets','coats','shorts','pajamas','wool-coats','diamond-necklaces','one-piece-swimsuits','rings','blazers','leather-and-suede-coats','day-dresses','socks','crewneck-sweaters','plus-size-jackets','petite-dresses','petite-jeans','athletic-pants','long-skirts','hats','petite-skirts','bracelets','chemises','slippers','gowns','necklaces','shortsleeve-tops','cashmere-sweaters','athletic-tops','casual-pants','hosiery','turleneck-sweaters','cropped-jeans','fur-and-shearling-coats','shapewear','relaxed-jeans','earrings','mini-skirts','belts','maternity-dresses','petite-jackets','cardigan-sweaters','distressed-jeans','stretch-jeans','scarves','sunglasses','polo-tops','robes','plus-size-sweaters','two-piece-swimsuits','raincoats-and-trenchcoats','sweatshirts','petite-tops','teen-girls-jeans','sports-bras-and-underwear','v-neck-sweaters','cashmere-tops','bootcut-jeans','teen-girls-dresses','longsleeve-tops','straight-leg-jeans','maternity-jeans'])
-    trainText(['petite-jeans','tunic-tops','maternity-tops','gloves','bras','cropped-jeans','tees-and-tshirts','camisole-tops','plus-size-skirts','teen-girls-jeans','relaxed-jeans','shortsleeve-tops','plus-size-pants','sunglasses','turleneck-sweaters','diamond-rings','tank-tops','mid-length-skirts','pajamas','casual-jackets','bracelets','panties','leather-and-suede-coats','watches','vests','leather-jackets','cardigan-sweaters','maternity-jeans','wedding-dresses','camisoles','mini-skirts','raincoats-and-trenchcoats','cropped-pants','hosiery','gowns','diamond-bracelets','cashmere-sweaters','plus-size-outerwear','stretch-jeans','belts','athletic-jackets','v-neck-sweaters','leggings','distressed-jeans','charms','plus-size-intimates','petite-skirts','skinny-pants','polo-tops','maternity-intimates','petite-jackets','petite-dresses','brooches-and-pins','fur-and-shearling-coats','womens-suits','scarves','plus-size-jackets','long-skirts','casual-pants','diamond-necklaces','flare-jeans','maternity-dresses','halter-tops','womens-tech-accessories','teen-girls-tops','wide-leg-pants','wool-coats','petite-pants','coats','plus-size-sweaters','two-piece-swimsuits','button-front-tops','blazers','robes','straight-leg-jeans','thongs','bootcut-jeans','plus-size-dresses','teen-girls-dresses','shapewear','earrings','athletic-pants','petite-tops','one-piece-swimsuits'     ,'crewneck-sweaters','plus-size-jeans','necklaces','puffer-coats','chemises','diamond-earrings'     ,'sweatshirts','denim-jackets','sleeveless-tops'])#   ,'skinny-jeans','athletic-tops','swimsuit-coverups'     ,'shorts','bridal-gowns','day-dresses','athletic-shorts','teen-girls-intimates','cashmere-tops','sports-bras-and-underwear','key-chains','plus-size-swimsuits','longsleeve-tops','hats','evening-dresses','cocktail-dresses','slippers','petite-sweaters','plus-size-tops','socks','rings'])
+    trainText(['petite-jeans','tunic-tops','maternity-tops','gloves','bras','cropped-jeans','tees-and-tshirts','camisole-tops','plus-size-skirts','teen-girls-jeans','relaxed-jeans','shortsleeve-tops','plus-size-pants','sunglasses','turleneck-sweaters','diamond-rings','tank-tops','mid-length-skirts','pajamas','casual-jackets','bracelets','panties','leather-and-suede-coats','watches','vests','leather-jackets','cardigan-sweaters','maternity-jeans','wedding-dresses','camisoles','mini-skirts','raincoats-and-trenchcoats','cropped-pants','hosiery','gowns','diamond-bracelets','cashmere-sweaters','plus-size-outerwear','stretch-jeans','belts','athletic-jackets','v-neck-sweaters','leggings','distressed-jeans','charms','plus-size-intimates','petite-skirts','skinny-pants','polo-tops','maternity-intimates','petite-jackets','petite-dresses','brooches-and-pins','fur-and-shearling-coats','womens-suits','scarves','plus-size-jackets','long-skirts','casual-pants','diamond-necklaces','flare-jeans','maternity-dresses','halter-tops','womens-tech-accessories','teen-girls-tops','wide-leg-pants','wool-coats','petite-pants','coats','plus-size-sweaters','two-piece-swimsuits','button-front-tops','blazers','robes','straight-leg-jeans','thongs','bootcut-jeans','plus-size-dresses','teen-girls-dresses','shapewear','earrings','athletic-pants','petite-tops','one-piece-swimsuits'     ,'crewneck-sweaters','plus-size-jeans','necklaces','puffer-coats','chemises','diamond-earrings'     ,'sweatshirts','denim-jackets','sleeveless-tops'   ,'skinny-jeans','athletic-tops','swimsuit-coverups'     ,'shorts','bridal-gowns','day-dresses','athletic-shorts','teen-girls-intimates','cashmere-tops','sports-bras-and-underwear','key-chains','plus-size-swimsuits','longsleeve-tops','hats','evening-dresses','cocktail-dresses','slippers','petite-sweaters','plus-size-tops','socks','rings'])
 
 if __name__ == "__main__":
     main()

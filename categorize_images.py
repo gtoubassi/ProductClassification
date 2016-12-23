@@ -13,7 +13,7 @@ def categorize(image_dir, num_steps, categories):
     if len(categories) <= 10:    
         name = ",".join(categories)
     else:
-        name = ",".join(categories[0:5]) + ("... (%d more)" % + len(categories))
+        name = ",".join(categories[0:5]) + ("... (%d total)" % + len(categories))
     experimentId = db.addExperiment("Image classification of: %s (steps: %d)" % (name, num_steps))
     image_lists = {}
     files_to_categories = {}
@@ -75,9 +75,7 @@ def main():
     #categorize(args.images_path, args.how_many_training_steps, ['skinny-jeans', 'bootcut-jeans'])
     #categorize(args.images_path, args.how_many_training_steps, ['clutches', 'bootcut-jeans'])
 
-    #categorize(args.images_path, args.how_many_training_steps, db.getCategoriesToPredict())
-    categorize(args.images_path, args.how_many_training_steps, ['two-piece-swimsuits','sunglasses','cardigan-sweaters','stretch-jeans','plus-size-swimsuits','swimsuit-coverups','panties','distressed-jeans','camisole-tops','athletic-pants','brooches-and-pins','tunic-tops','scarves','teen-girls-intimates','gloves','coats','cropped-jeans','thongs','hats','sports-bras-and-underwear','cropped-pants','petite-jeans','blazers','halter-tops','diamond-necklaces','robes','shapewear','skinny-pants','flare-jeans'])
-    #categorize(args.images_path, args.how_many_training_steps, ['two-piece-swimsuits','sunglasses','cardigan-sweaters','stretch-jeans','swimsuit-coverups','panties','distressed-jeans','camisole-tops','athletic-pants','brooches-and-pins','tunic-tops','scarves','teen-girls-intimates','gloves','coats','cropped-jeans','thongs','hats','sports-bras-and-underwear','cropped-pants','blazers','halter-tops','diamond-necklaces','robes','shapewear','skinny-pants','flare-jeans'])
+    categorize(args.images_path, args.how_many_training_steps, db.getCategoriesToPredict())
 
 if __name__ == "__main__":
     main()
