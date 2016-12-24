@@ -82,6 +82,29 @@ def classifyImagesAndText(image_dir, num_steps, categories):
         accuracy = sess.run(evaluation_step, feed_dict={images_x: images_batch_xs, words_x: words_batch_xs, y_target: images_batch_ys})
         print("step %d of %d validation accuracy=%f" % (step, args.how_many_training_steps, accuracy))
 
+    # Test
+    images_batch_xs, images_batch_ys, test_filenames = retrain.get_random_cached_bottlenecks(None, image_lists, args.validation_batch_size, 'validation', args.bottleneck_dir, '', None, None)        
+    batch_products = []
+    for file in test_filenames:
+        f = re.sub('^' + image_dir + '/', '', file)
+        batch_products.append(productId_to_product[files_to_productId[f]])
+    
+    words_batch_xs, words_batch_ys = categorize_words.computeTFDataForProducts(batch_products, vocab_indices, category_indices, seenCategories)
+    accuracy, test_results = sess.run([evaluation_step, y], feed_dict={images_x: images_batch_xs, words_x: words_batch_xs, y_target: images_batch_ys})
+    print("step %d of %d test accuracy=%f" % (step, args.how_many_training_steps, accuracy))
+
+    total_correct = 0
+    for i, f in enumerate(test_filenames):
+        file = re.sub('^' + image_dir + '/', '', f)
+        prediction_index = np.argmax(test_results[i])
+        prediction_score = np.max(test_results[i])
+        predicted_cat = list(image_lists.keys())[prediction_index]
+        productId = files_to_productId[file]
+        db.addPredictedCategory(experimentId, productId, predicted_cat, prediction_score)
+        correct_cat = files_to_categories[file]
+        correct_index = list(image_lists.keys()).index(correct_cat)
+        total_correct += 1 if prediction_index == correct_index else 0
+    print("%d of %d (%f)" % (total_correct, len(test_filenames), float(total_correct)/len(test_filenames)))
 
 def main():
     parser = argparse.ArgumentParser()
