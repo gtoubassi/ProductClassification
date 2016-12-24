@@ -59,7 +59,7 @@ def dumpErrors(experimentId):
     for e in errors:
         print("<tr>")
 
-        print('<td><img src="%s" xheight="200"></td>' % e['image'])
+        print('<td><a href="https://www.shopstyle.com/action/loadRetailerProductPage?id=%d"><img src="%s" xheight="200"></a></td>' % (e['id'], e['image']))
         
         print("<td><table>")
         print('<tr><td align=right>Name:</td><td>%s</td></tr>' % e['name'].encode('utf-8'))
@@ -90,7 +90,7 @@ def main():
         for e in experiments:
             predictions = db.getPredictedCategories(e['id'])
             if len(predictions) > 0:
-                print(e['name'])
+                print("#%d: %s" % (e['id'], e['name']))
                 analyze(predictions)
 
 if __name__ == "__main__":
