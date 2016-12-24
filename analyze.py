@@ -8,11 +8,17 @@ import hashlib
 import os
 from tensorflow.python.util import compat
 import numpy as np
+from itertools import chain
 
 def analyzeCoverageForDesiredAccuracy(predictions, desired_accuracy):
     coverage = 0.0
-    for i in xrange(0, 100):
-        threshold = i/100.0
+
+    # Test thresholds in increments of .01, except for .99-1.00 where we test at .001.
+    # This was found to be necessary when trying to achieve high coverages
+    # (e.g. a score of .999 might be needed to get a 98% coverage so without this
+    # extra precision we'd erroneously report 0)
+    for i in chain(xrange(0, 900,10), xrange(900,1000)):
+        threshold = i/1000.0
         coverage_count = 0
         num_correct = 0
         for p in predictions:
