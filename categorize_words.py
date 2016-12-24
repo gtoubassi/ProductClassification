@@ -71,7 +71,7 @@ def prepWordTraining(products):
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     prediction = tf.argmax(y, 1)
     
-    return x, y, y_logits, y_, train_step, prediction, vocab_indices, category_indices, seenCategories
+    return x, y, h1, y_logits, y_, train_step, prediction, vocab_indices, category_indices, seenCategories
     
 def classifyText(categories):
     if len(categories) <= 10:    
@@ -83,7 +83,7 @@ def classifyText(categories):
     products = db.getProducts(categories)
     random.shuffle(products)
 
-    x, y, y_logits, y_, train_step, prediction, vocab_indices, category_indices, seenCategories = prepWordTraining(products)
+    x, y, h1, y_logits, y_, train_step, prediction, vocab_indices, category_indices, seenCategories = prepWordTraining(products)
     
     sess = tf.InteractiveSession()
     tf.global_variables_initializer().run()

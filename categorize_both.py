@@ -25,7 +25,7 @@ def classifyImagesAndText(image_dir, num_steps, categories):
     products = db.getProducts(categories)
     random.shuffle(products)
 
-    words_x, words_y, words_y_logits, words_y_, words_train_step, words_prediction, vocab_indices, category_indices, seenCategories = categorize_words.prepWordTraining(products)
+    words_x, words_y, words_h1, words_y_logits, words_y_, words_train_step, words_prediction, vocab_indices, category_indices, seenCategories = categorize_words.prepWordTraining(products)
     
     images_x, images_y, images_y_logits, images_y_target, images_train_step, images_evaluation_step, image_lists, files_to_categories, files_to_productId = categorize_images.prepImageTraining(image_dir, products)
 
@@ -34,15 +34,16 @@ def classifyImagesAndText(image_dir, num_steps, categories):
         productId_to_product[p['id']] = p
 
     # build the combined network
-    
-    merged_logits = tf.concat(1, [words_y_logits, images_y_logits])
+
+    merged_input = tf.concat(1, [words_h1, images_x])
+
     y_target = tf.placeholder(tf.float32, shape=[None, len(seenCategories)], name='combined_target')
 
-    stdv1 = 1.0 / math.sqrt(int(merged_logits.get_shape()[-1]))
-    w1 = tf.Variable(tf.random_uniform([int(merged_logits.get_shape()[-1]), len(seenCategories)], minval=-stdv1, maxval=stdv1))
+    stdv1 = 1.0 / math.sqrt(int(merged_input.get_shape()[-1]))
+    w1 = tf.Variable(tf.random_uniform([int(merged_input.get_shape()[-1]), len(seenCategories)], minval=-stdv1, maxval=stdv1))
     b1  = tf.Variable(tf.random_uniform([len(seenCategories)], minval=-stdv1, maxval=stdv1))
 
-    y_logits = tf.matmul(merged_logits, w1) + b1
+    y_logits = tf.matmul(merged_input, w1) + b1
 
     y = tf.nn.softmax(y_logits)
 
