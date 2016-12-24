@@ -20,7 +20,7 @@ def classifyImagesAndText(image_dir, num_steps, categories):
         name = ",".join(categories)
     else:
         name = ",".join(categories[0:5]) + ("... (%d total)" % + len(categories))
-    experimentId = db.addExperiment("Image+Text classification of: %s" % name)
+    experimentId = db.addExperiment("Image+Text classification of: %s (%d steps)" % (name, args.how_many_training_steps))
 
     products = db.getProducts(categories)
     random.shuffle(products)
