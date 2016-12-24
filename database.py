@@ -53,6 +53,11 @@ class Database:
         cur.execute("select * from experiment")
         return cur.fetchall()
     
+    def getExperiment(self, experimentId):
+        cur = self.con.cursor()        
+        cur.execute("select * from experiment where id=?", (experimentId,))
+        return cur.fetchone()
+    
     def getParentCategoryMap(self):
         cur = self.con.cursor()
         cur.execute("select id, parent from category")
@@ -88,6 +93,11 @@ class Database:
         cur.execute("select id from category where leaf=1 and product_count >= 1000")
         cats = cur.fetchall()
         return [cat[0] for cat in cats]
+    
+    def getMisclassificationsForExperiment(self, experimentId, topN):
+        cur = self.con.cursor()        
+        cur.execute("select p.*,pc.category_id as predicted_category,pc.score from product p, predicted_category pc where p.id=pc.product_id and pc.experiment_id=? and p.category_id!=pc.category_id order by pc.score desc limit ?", (experimentId, topN))
+        return cur.fetchall()
 
     def getCategories(self):
         cur = self.con.cursor()        

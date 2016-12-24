@@ -49,20 +49,49 @@ def analyze(predictions):
     accuracy, coverage = analyzeCoverageForDesiredAccuracy(parentPredictions, .98)
     print("  Parent 98%% Accuracy Coverage: %d%%" % (coverage*100))
 
+def dumpErrors(experimentId):
+    experiment = db.getExperiment(experimentId)
+    errors = db.getMisclassificationsForExperiment(experimentId, 500)
+    print("<html><body>")
+    print("<b>Experiment %d on %s: %s</b><br/><br/>" % (experiment['id'], experiment['date'], experiment['name']))
+    print("<table border='1'>")
+    
+    for e in errors:
+        print("<tr>")
+
+        print('<td><img src="%s" xheight="200"></td>' % e['image'])
+        
+        print("<td><table>")
+        print('<tr><td align=right>Name:</td><td>%s</td></tr>' % e['name'].encode('utf-8'))
+        print('<tr><td align=right>Description:</td><td>%s</td></tr>' % e['description'].encode('utf-8'))
+        print('<tr><td align=right>Category:</td><td>%s</td></tr>' % e['category_id'])
+        print('<tr><td align=right>Predicted:</td><td>%s (%f)</td></tr>' % (e['predicted_category'], e['score']))
+        print("</table></td>")
+
+        print("</tr>")
+    
+    print("</table>")
+    print("</body></html>")
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--db-path", default='crawl.db', help="Path to sqlite db file")
+    parser.add_argument("--dump-errors-for-experiment", type=int, help="Dump html report of the 100 most egregious (highest scoring) errors")
+
     args = parser.parse_args()
 
     global db
     db = database.Database(args.db_path)
-    
-    experiments = db.getExperiments()
-    for e in experiments:
-        predictions = db.getPredictedCategories(e['id'])
-        if len(predictions) > 0:
-            print(e['name'])
-            analyze(predictions)
+
+    if args.dump_errors_for_experiment:
+        dumpErrors(args.dump_errors_for_experiment)
+    else:
+        experiments = db.getExperiments()
+        for e in experiments:
+            predictions = db.getPredictedCategories(e['id'])
+            if len(predictions) > 0:
+                print(e['name'])
+                analyze(predictions)
 
 if __name__ == "__main__":
     main()
