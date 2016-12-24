@@ -8,54 +8,54 @@ import hashlib
 import os
 from tensorflow.python.util import compat
 import numpy as np
+import re
 
-def categorize(image_dir, num_steps, categories):
+def classifyImages(image_dir, num_steps, categories):
     if len(categories) <= 10:    
         name = ",".join(categories)
     else:
         name = ",".join(categories[0:5]) + ("... (%d total)" % + len(categories))
-    experimentId = db.addExperiment("Image classification of: %s (steps: %d)" % (name, num_steps))
+    experimentId = db.addExperiment("Image classification of: %s" % name)
+
+    products = db.getProducts(categories)
+
     image_lists = {}
     files_to_categories = {}
     files_to_productId = {}
-    for cat in categories:
-        products = db.getProductsForCategory(cat)
-        files = [p['image'].split('/')[-1] for p in products]
-        files = [f[0:2]+'/'+f for f in files]
+
+    for p in products:
+        file = p['image'].split('/')[-1]
+        file = file[0:2] + '/' + file
+        files_to_productId[file] = p['id']
+        cat = p['category_id']
+        files_to_categories[file] = cat
         
-        for p in products:
-            files_to_productId[os.path.basename(p['image'])] = p['id']
-
-        train = []
-        validation = []
-        test = []
+        if image_lists.get(cat) is None:
+            image_lists[cat] = {
+                'dir': image_dir,
+                'training': [],
+                'testing': [],
+                'validation': []
+            }
+        hash_str = hashlib.sha1(compat.as_bytes(file)).hexdigest()
+        percentage_hash = (int(hash_str, 16) % 10000) * 100.0 / 10000
+        if percentage_hash < 10:
+            image_lists[cat]['validation'].append(file)
+        elif percentage_hash < 20:
+            image_lists[cat]['testing'].append(file)
+        else:
+            image_lists[cat]['training'].append(file)
     
-        for f in files:
-            files_to_categories[os.path.basename(f)] = cat
-            hash_str = hashlib.sha1(compat.as_bytes(f)).hexdigest()
-            percentage_hash = (int(hash_str, 16) % 10000) * 100.0 / 10000
-            if percentage_hash < 10:
-                validation.append(f)
-            elif percentage_hash < 20:
-                test.append(f)
-            else:
-                train.append(f)
-
-        image_lists[cat] = {
-            'dir': image_dir,
-            'training': train,
-            'testing': test,
-            'validation': validation,
-        }
     test_filenames, test_results = retrain.retrain(image_lists)
     total_correct = 0
     for i, f in enumerate(test_filenames):
+        file = re.sub('^' + image_dir + '/', '', f)
         prediction_index = np.argmax(test_results[i])
         prediction_score = np.max(test_results[i])
         predicted_cat = list(image_lists.keys())[prediction_index]
-        productId = files_to_productId[os.path.basename(f)]
+        productId = files_to_productId[file]
         db.addPredictedCategory(experimentId, productId, predicted_cat, prediction_score)
-        correct_cat = files_to_categories[os.path.basename(f)]
+        correct_cat = files_to_categories[file]
         correct_index = list(image_lists.keys()).index(correct_cat)
         total_correct += 1 if prediction_index == correct_index else 0
 
@@ -72,10 +72,10 @@ def main():
     global db
     db = database.Database(args.db_path)
     
-    #categorize(args.images_path, args.how_many_training_steps, ['skinny-jeans', 'bootcut-jeans'])
-    #categorize(args.images_path, args.how_many_training_steps, ['clutches', 'bootcut-jeans'])
+    classifyImages(args.images_path, args.how_many_training_steps, ['skinny-jeans', 'bootcut-jeans'])
+    #classifyImages(args.images_path, args.how_many_training_steps, ['clutches', 'bootcut-jeans'])
 
-    categorize(args.images_path, args.how_many_training_steps, db.getCategoriesToPredict())
+    #classifyImages(args.images_path, args.how_many_training_steps, [])
 
 if __name__ == "__main__":
     main()
