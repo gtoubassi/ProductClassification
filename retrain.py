@@ -709,11 +709,12 @@ def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor):
   # to see in TensorBoard
   layer_name = 'final_training_ops'
   with tf.name_scope(layer_name):
+    stdv1 = 1.0 / math.sqrt(2048)
     with tf.name_scope('weights'):
-      layer_weights = tf.Variable(tf.truncated_normal([BOTTLENECK_TENSOR_SIZE, class_count], stddev=0.001), name='final_weights')
+      layer_weights = tf.Variable(tf.random_uniform([BOTTLENECK_TENSOR_SIZE, class_count], minval=-stdv1, maxval=stdv1), name='final_weights')
       variable_summaries(layer_weights)
     with tf.name_scope('biases'):
-      layer_biases = tf.Variable(tf.zeros([class_count]), name='final_biases')
+      layer_biases = tf.Variable(tf.random_uniform([class_count], minval=-stdv1, maxval=stdv1), name='final_biases')
       variable_summaries(layer_biases)
     with tf.name_scope('Wx_plus_b'):
       logits = tf.matmul(bottleneck_input, layer_weights) + layer_biases
@@ -730,8 +731,11 @@ def add_final_training_ops(class_count, final_tensor_name, bottleneck_tensor):
   tf.summary.scalar('cross_entropy', cross_entropy_mean)
 
   with tf.name_scope('train'):
-    train_step = tf.train.GradientDescentOptimizer(FLAGS.learning_rate).minimize(
-        cross_entropy_mean)
+    if FLAGS.learning_rate > 0:
+        train_step = tf.train.GradientDescentOptimizer(FLAGS.learning_rate).minimize(cross_entropy_mean)
+    else:
+        train_step = tf.train.AdamOptimizer().minimize(cross_entropy_mean)
+        
 
   return (train_step, cross_entropy_mean, bottleneck_input, ground_truth_input,
           final_tensor)
@@ -935,8 +939,8 @@ def addargs(parser):
   parser.add_argument(
       '--learning_rate',
       type=float,
-      default=0.01,
-      help='How large a learning rate to use when training.'
+      default=0,
+      help='How large a learning rate to use when training. default is 0 which means use AdamOptimizer'
   )
   parser.add_argument(
       '--testing_percentage',

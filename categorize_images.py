@@ -6,9 +6,11 @@ import random
 import retrain
 import hashlib
 import os
+import tensorflow as tf
 from tensorflow.python.util import compat
 import numpy as np
 import re
+import math
 
 def classifyImages(image_dir, num_steps, categories):
     if len(categories) <= 10:    
@@ -46,7 +48,44 @@ def classifyImages(image_dir, num_steps, categories):
         else:
             image_lists[cat]['training'].append(file)
     
-    test_filenames, test_results = retrain.retrain(image_lists)
+    x = tf.placeholder(tf.float32, shape=[None, 2048], name='bottleneck_input')
+    y_target = tf.placeholder(tf.float32, shape=[None, len(image_lists)], name='groundtruth_input')
+
+    stdv1 = 1.0 / math.sqrt(2048)
+    w1 = tf.Variable(tf.random_uniform([2048, len(image_lists)], minval=-stdv1, maxval=stdv1))
+    b1  = tf.Variable(tf.random_uniform([len(image_lists)], minval=-stdv1, maxval=stdv1))
+
+    logits = tf.matmul(x, w1) + b1
+
+    y = tf.nn.softmax(logits)
+
+    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, y_target)
+    cross_entropy_mean = tf.reduce_mean(cross_entropy)
+
+    prediction = tf.argmax(y, 1)
+    correct_prediction = tf.equal(prediction, tf.argmax(y_target, 1))
+    evaluation_step = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+    train_step = tf.train.AdamOptimizer().minimize(cross_entropy_mean)
+    
+    sess = tf.InteractiveSession()
+    tf.global_variables_initializer().run()
+
+    # Train
+    for step in xrange(args.how_many_training_steps):
+
+        batch_xs, batch_ys, filenames = retrain.get_random_cached_bottlenecks(None, image_lists, args.train_batch_size, 'training', args.bottleneck_dir, '', None, None)
+        sess.run(train_step, feed_dict={x: batch_xs, y_target: batch_ys})
+
+        validation_xs, validation_ys, validation_filenames = retrain.get_random_cached_bottlenecks(None, image_lists, args.validation_batch_size, 'validation', args.bottleneck_dir, '', None, None)
+        accuracy = sess.run(evaluation_step, feed_dict={x: batch_xs, y_target: batch_ys})
+
+        print("step %d of %d validation accuracy=%f" % (step, args.how_many_training_steps, accuracy))
+
+    test_xs, test_ys, test_filenames = retrain.get_random_cached_bottlenecks(None, image_lists, -1, 'testing', args.bottleneck_dir, '', None, None)
+    accuracy, test_results = sess.run([evaluation_step, y], feed_dict={x: test_xs, y_target: test_ys})
+    print("Final testing accuracy %f" % accuracy)
+    
     total_correct = 0
     for i, f in enumerate(test_filenames):
         file = re.sub('^' + image_dir + '/', '', f)
@@ -58,7 +97,6 @@ def classifyImages(image_dir, num_steps, categories):
         correct_cat = files_to_categories[file]
         correct_index = list(image_lists.keys()).index(correct_cat)
         total_correct += 1 if prediction_index == correct_index else 0
-
     print("%d of %d (%f)" % (total_correct, len(test_filenames), float(total_correct)/len(test_filenames)))
 
 def main():
@@ -66,6 +104,7 @@ def main():
     parser.add_argument("--db-path", default='crawl.db', help="Path to sqlite db file")
     parser.add_argument("--images-path", default='images', help="Path to directory in which images should be saved")
     retrain.addargs(parser)
+    global args
     args = parser.parse_args()
     retrain.setargs(args)
 
