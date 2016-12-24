@@ -12,15 +12,7 @@ import numpy as np
 import re
 import math
 
-def classifyImages(image_dir, num_steps, categories):
-    if len(categories) <= 10:    
-        name = ",".join(categories)
-    else:
-        name = ",".join(categories[0:5]) + ("... (%d total)" % + len(categories))
-    experimentId = db.addExperiment("Image classification of: %s" % name)
-
-    products = db.getProducts(categories)
-
+def prepImageTraining(image_dir, products):
     image_lists = {}
     files_to_categories = {}
     files_to_productId = {}
@@ -55,11 +47,11 @@ def classifyImages(image_dir, num_steps, categories):
     w1 = tf.Variable(tf.random_uniform([2048, len(image_lists)], minval=-stdv1, maxval=stdv1))
     b1  = tf.Variable(tf.random_uniform([len(image_lists)], minval=-stdv1, maxval=stdv1))
 
-    logits = tf.matmul(x, w1) + b1
+    y_logits = tf.matmul(x, w1) + b1
 
-    y = tf.nn.softmax(logits)
+    y = tf.nn.softmax(y_logits)
 
-    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, y_target)
+    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(y_logits, y_target)
     cross_entropy_mean = tf.reduce_mean(cross_entropy)
 
     prediction = tf.argmax(y, 1)
@@ -67,6 +59,20 @@ def classifyImages(image_dir, num_steps, categories):
     evaluation_step = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
     train_step = tf.train.AdamOptimizer().minimize(cross_entropy_mean)
+
+    return x, y, y_logits, y_target, train_step, evaluation_step, image_lists, files_to_categories, files_to_productId
+    
+def classifyImages(image_dir, num_steps, categories):
+    if len(categories) <= 10:    
+        name = ",".join(categories)
+    else:
+        name = ",".join(categories[0:5]) + ("... (%d total)" % + len(categories))
+    experimentId = db.addExperiment("Image classification of: %s" % name)
+
+    products = db.getProducts(categories)
+    random.shuffle(products)
+    
+    x, y, y_logits, y_target, train_step, evaluation_step, image_lists, files_to_categories, files_to_productId = prepImageTraining(image_dir, products)
     
     sess = tf.InteractiveSession()
     tf.global_variables_initializer().run()
