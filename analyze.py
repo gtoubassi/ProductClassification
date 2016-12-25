@@ -82,7 +82,7 @@ def dumpErrors(experimentId):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--db-path", default='crawl.db', help="Path to sqlite db file")
-    parser.add_argument("--dump-errors-for-experiment", type=int, help="Dump html report of the 100 most egregious (highest scoring) errors")
+    parser.add_argument("--dump-errors-for-experiment", type=int, help="Dump html report of the 500 most egregious (highest scoring) errors")
 
     args = parser.parse_args()
 

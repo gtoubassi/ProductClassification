@@ -75,6 +75,9 @@ def classifyImages(image_dir, num_steps, categories):
     x, y, y_logits, y_target, train_step, evaluation_step, image_lists, files_to_categories, files_to_productId = prepImageTraining(image_dir, products)
     
     sess = tf.InteractiveSession()
+
+    retrain.prep_bottlenecks(sess, image_lists)
+
     tf.global_variables_initializer().run()
 
     # Train
@@ -109,6 +112,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--db-path", default='crawl.db', help="Path to sqlite db file")
     parser.add_argument("--images-path", default='images', help="Path to directory in which images should be saved")
+    parser.add_argument("--categories", help="categories to predict.  If not specified, all categories with 1000 products are trained")
     retrain.addargs(parser)
     global args
     args = parser.parse_args()
@@ -117,9 +121,11 @@ def main():
     global db
     db = database.Database(args.db_path)
     
-    classifyImages(args.images_path, args.how_many_training_steps, [])
-    #classifyImages(args.images_path, args.how_many_training_steps, ['skinny-jeans', 'bootcut-jeans'])
-    #classifyImages(args.images_path, args.how_many_training_steps, ['clutches', 'bootcut-jeans'])
+    categories = []
+    if args.categories:
+        categories = args.categories.split(',')
+    
+    classifyImages(args.images_path, args.how_many_training_steps, categories)
 
 if __name__ == "__main__":
     main()

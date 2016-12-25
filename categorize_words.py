@@ -134,14 +134,17 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--db-path", default='crawl.db', help="Path to sqlite db file")
     parser.add_argument("--images-path", default='images', help="Path to directory in which images should be saved")
+    parser.add_argument("--categories", help="categories to predict.  If not specified, all categories with 1000 products are trained")
     args = parser.parse_args()
 
     global db
     db = database.Database(args.db_path)
-    
-    classifyText([])
-    #classifyText(['skinny-jeans', 'bootcut-jeans'])
-    #classifyText(['two-piece-swimsuits','sunglasses','cardigan-sweaters','stretch-jeans','plus-size-swimsuits'])
+
+    categories = []
+    if args.categories:
+        categories = args.categories.split(',')
+        
+    classifyText(categories)
 
 if __name__ == "__main__":
     main()

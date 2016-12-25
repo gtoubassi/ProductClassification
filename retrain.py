@@ -762,6 +762,30 @@ def add_evaluation_step(result_tensor, ground_truth_tensor):
   tf.summary.scalar('accuracy', evaluation_step)
   return evaluation_step, prediction
 
+def prep_bottlenecks(sess, image_lists):
+  # Setup the directory we'll write summaries to for TensorBoard
+  if tf.gfile.Exists(FLAGS.summaries_dir):
+    tf.gfile.DeleteRecursively(FLAGS.summaries_dir)
+  tf.gfile.MakeDirs(FLAGS.summaries_dir)
+
+  # Set up the pre-trained graph.
+  maybe_download_and_extract()
+  graph, bottleneck_tensor, jpeg_data_tensor, resized_image_tensor = (
+      create_inception_graph())
+
+  class_count = len(image_lists.keys())
+  if class_count == 0:
+    print('No valid folders of images found at ' + FLAGS.image_dir)
+    return -1
+  if class_count == 1:
+    print('Only one valid folder of images found at ' + FLAGS.image_dir +
+          ' - multiple classes are needed for classification.')
+    return -1
+
+  # We'll make sure we've calculated the 'bottleneck' image summaries and
+  # cached them on disk.
+  cache_bottlenecks(sess, image_lists, FLAGS.image_dir, FLAGS.bottleneck_dir, jpeg_data_tensor, bottleneck_tensor)
+    
 def retrain(image_lists):
   # Setup the directory we'll write summaries to for TensorBoard
   if tf.gfile.Exists(FLAGS.summaries_dir):
