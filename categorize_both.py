@@ -118,8 +118,8 @@ def main():
     global db
     db = database.Database(args.db_path)
     
-    classifyImagesAndText(args.images_path, args.how_many_training_steps, ['skinny-jeans', 'bootcut-jeans'])
-    #classifyImages(args.images_path, args.how_many_training_steps, [])
+    #classifyImagesAndText(args.images_path, args.how_many_training_steps, ['skinny-jeans', 'bootcut-jeans'])
+    classifyImagesAndText(args.images_path, args.how_many_training_steps, [])
 
 if __name__ == "__main__":
     main()

@@ -139,12 +139,9 @@ def main():
     global db
     db = database.Database(args.db_path)
     
-    #classifyText([])
-    classifyText(['skinny-jeans', 'bootcut-jeans'])
-
+    classifyText([])
+    #classifyText(['skinny-jeans', 'bootcut-jeans'])
     #classifyText(['two-piece-swimsuits','sunglasses','cardigan-sweaters','stretch-jeans','plus-size-swimsuits'])
-    #classifyText(['two-piece-swimsuits','sunglasses','cardigan-sweaters','stretch-jeans','plus-size-swimsuits','swimsuit-coverups','panties','distressed-jeans','camisole-tops','athletic-pants','brooches-and-pins','tunic-tops','scarves','teen-girls-intimates','gloves','coats','cropped-jeans','thongs','hats','sports-bras-and-underwear','cropped-pants','petite-jeans','blazers','halter-tops','diamond-necklaces','robes','shapewear','skinny-pants','flare-jeans'])
-    #classifyText(['slippers','wedding-dresses','cashmere-sweaters','leather-jackets','plus-size-outerwear','chemises','plus-size-tops','tunic-tops','camisole-tops','diamond-bracelets','straight-leg-jeans','leggings','evening-dresses','flare-jeans','sunglasses','coats','socks','button-front-tops','stretch-jeans','shortsleeve-tops','bracelets','fur-and-shearling-coats','hats','teen-girls-jeans','one-piece-swimsuits','v-neck-sweaters','diamond-necklaces','athletic-jackets','gloves','blazers','bootcut-jeans','skinny-jeans','denim-jackets','maternity-intimates','sports-bras-and-underwear','wool-coats','womens-tech-accessories','brooches-and-pins','polo-tops','tees-and-tshirts','halter-tops','teen-girls-dresses','raincoats-and-trenchcoats','gowns','thongs','cropped-pants','pajamas','relaxed-jeans','leather-and-suede-coats','plus-size-swimsuits'])
 
 if __name__ == "__main__":
     main()
