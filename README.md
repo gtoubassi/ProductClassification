@@ -14,7 +14,7 @@ The dataset used for classification is pulled from the www.shopstyle.com public 
 
 Some challenges with classifying this content comes from the fact that the leafs categories are often ambiguous.  Bootcut vs flare jeans is not always clear.  And what about a pair of bootcut jeans that are also distressed (another subcategory under jeans).  Another class of problems comes from the fact that there are subcategories for "athletic", "maternity", "plus size" and "petites", each of which has a "tops" subcategory.  So a polo could be either a "womens-tops/polo-tops", an "athletic/ahtletic-tops", a "maternity/top", a "plus-sizes/plus-size-tops", or a "petites/petite-tops".
 
-The sample dataset I worked with consisted of all leaf categories under the "women" category, which includes clothing, handbags, shoes, jewelry, and beauty products.  Men's, kids & baby, and living categories were ignored.  Only leaf categories that had 1000 or more products were considered.  These restrictions left 156 leaf categories and just over 146k products (yes there should be 156*1000 products, some bug during the crawl presumably).  The categories covered are listed in 'results/categories.txt'.
+The sample dataset I worked with consisted of all leaf categories under the "women" category, which includes clothing, handbags, shoes, jewelry, and beauty products.  Men's, kids & baby, and living categories were ignored.  Only leaf categories that had 1000 or more products were considered.  These restrictions left 156 leaf categories and just over 146k products (yes there should be 156*1000 products, some bug during the crawl presumably).  The categories covered are listed in `results/categories.txt`.
 
 Experiments were run on an 80%/10%/10% train/validation/test split where total accuracy was measured.  If machine predicted categories were used in a real product UI you would want to be especially sensitive to false positives (you really don't want a bra showing up in the jeans section), so in addition to total accuracy, coverage @ 95%/98% accuracy is measured.  Total accuracy of 85% over the total corpus is not as interesting as knowing that 70% of the corpus can be covered with a threshold that has been shown to have a very very low error rate (98% implies 1 in 50 mistakes)
 
@@ -22,11 +22,11 @@ Experiments were run on an 80%/10%/10% train/validation/test split where total a
 
 The first approach was to classify entirely based on the image content.  The approach used [retrain.py](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/examples/image_retraining) which repurposes a pre-trained Inception CNN to classify a new image corpus.  The underlying assumption is the generally trained inception network will recognize useful features of any image that then can be leveraged for domain specific classification.  The second to last layer outputs for each image are taken used essentially an embedding of the image into a 2048 dimensional space (2048 is the size of the second to last layer).  So with each image represented as a 2048 dimension vector, you can perform simple logistic regression to train a classifier.
 
-Initial results looked promising for simple cases.  For example classifying "clutches" (a kind of handbag) vs "bootcut-jeans" was done with 100% accuracy, which is to be expected givne they are so visuall distinct.  A more complex case of "skinny-jeans" vs "bootcut-jeans" was also promising with 89% accuracy and 73% coverage @95% accuracy.  However when covering the entire corpus of 146k products the overall accuracy dropped to 56%, and coverage @95% was only 12% of the corpus.  Examples of the top 500 (meaning the incorrect categories that the network had the highest confidence in) can be seen in 'results/image-classification-top500-errors.html'.  Note the first 20 or so look to be legitimate errors on the part of the dataset (meaning the classifier got it right).
+Initial results looked promising for simple cases.  For example classifying "clutches" (a kind of handbag) vs "bootcut-jeans" was done with 100% accuracy, which is to be expected givne they are so visuall distinct.  A more complex case of "skinny-jeans" vs "bootcut-jeans" was also promising with 89% accuracy and 73% coverage @95% accuracy.  However when covering the entire corpus of 146k products the overall accuracy dropped to 56%, and coverage @95% was only 12% of the corpus.  Examples of the top 500 (meaning the incorrect categories that the network had the highest confidence in) can be seen in `results/image-classification-top500-errors.html`.  Note the first 20 or so look to be legitimate errors on the part of the dataset (meaning the classifier got it right).
 
 ### Text classification
 
-The second approach used the product name and description of the product to classify it.  A simple 3 layer network was used.  The input was a 20k sparse vector representing a bag-of-words representation of the name/description for the product for the top 20k terms found in the corpus.  The hidden layer is 100 ReLus, and the final softmax layer performs classification.  The results on the entire 146k corpus was an overall accuracy of 89% and coverage @95% of 82%.  Top errors can be seen in 'results/text-classification-top500-errors.html'.
+The second approach used the product name and description of the product to classify it.  A simple 3 layer network was used.  The input was a 20k sparse vector representing a bag-of-words representation of the name/description for the product for the top 20k terms found in the corpus.  The hidden layer is 100 ReLus, and the final softmax layer performs classification.  The results on the entire 146k corpus was an overall accuracy of 89% and coverage @95% of 82%.  Top errors can be seen in `results/text-classification-top500-errors.html`.
 
 This bag of words classifier is very naive.  TBD try a word2vec style embedding (or perhaps [Swivel](https://github.com/tensorflow/models/tree/master/swivel)) to see if it improves.
 
@@ -44,9 +44,9 @@ Perform the crawl.  This will take up to a day or so and can be restarted.
 
     $ python crawl.py
 
-The crawl stores product information in a local sqlite database called 'crawl.db'.  You can explore the database using the 'sqlite3' command line tool executing queries like '.schema category', '.schema product', 'select * from category;' and 'select * from product limit 20;'.
+The crawl stores product information in a local sqlite database called `crawl.db`.  You can explore the database using the `sqlite3` command line tool executing queries like `.schema category`, `.schema product`, `select * from category;` and `select * from product limit 20;`.
 
-Now you can attempt to classify using images (drop the '--categories' argument if you want to do the full dataset).  Note it will take awhile the first time because it has to compute the embedding for each image (referred to in the output and the retrain.p code as the 'bottleneck').
+Now you can attempt to classify using images (drop the `--categories` argument if you want to do the full dataset).  Note it will take awhile the first time because it has to compute the embedding for each image (referred to in the output and the retrain.p code as the `bottleneck`).
 
     $ python categorize_images.py --categories bootcut-jeans,skinny-jeans
 
@@ -58,7 +58,7 @@ To run the combined classifier:
 
     $ python categorize_words.py --categories bootcut-jeans,skinny-jeans
 
-Each of the above classification runs will leave results data in the sqlite database.  This can be interrogated directly with 'sqlite3' with queries like 'select * from experiment' and 'select * from predicted_category pc where pc.experiment_id=1'.  More conveniently you can generate a report of all experiments in the db by running:
+Each of the above classification runs will leave results data in the sqlite database.  This can be interrogated directly with `sqlite3` with queries like `select * from experiment` and `select * from predicted_category pc where pc.experiment_id=1`.  More conveniently you can generate a report of all experiments in the db by running:
 
     $ python analyze.py
 	#1: Image classification of: 
@@ -77,7 +77,7 @@ Each of the above classification runs will leave results data in the sqlite data
 	  Parent 98% Accuracy Coverage: 78%
 	...
 
-You can use 'analyze.py' to generate an html report of the top errors (the ones that were wrong that the classifier was most certain of):
+You can use `analyze.py` to generate an html report of the top errors (the ones that were wrong that the classifier was most certain of):
 
     $ python analyze.py --dump-errors-for-experiment 2 >> errors.html
 
