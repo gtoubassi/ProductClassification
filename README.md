@@ -56,7 +56,7 @@ To run the text classifier:
 
 To run the combined classifier:
 
-    $ python categorize_words.py --categories bootcut-jeans,skinny-jeans
+    $ python categorize_both.py --categories bootcut-jeans,skinny-jeans
 
 Each of the above classification runs will leave results data in the sqlite database.  This can be interrogated directly with `sqlite3` with queries like `select * from experiment` and `select * from predicted_category pc where pc.experiment_id=1`.  More conveniently you can generate a report of all experiments in the db by running:
 
